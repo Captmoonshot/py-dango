@@ -5,6 +5,7 @@
 CREATE TABLE account(
     account_id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
+    credit_card BIGINT,
     password VARCHAR(255) NOT NULL,
     zip_code INTEGER(5) NOT NULL,
     first_name VARCHAR(50),
@@ -15,9 +16,9 @@ CREATE TABLE account(
 
 -- INSERT FIRST ROW
 --      Make sure to use the SHA1 hashing algorithm to protect passwords
-INSERT INTO account (email, password, zip_code, first_name, last_name)
+INSERT INTO account (email, credit_card, password, zip_code, first_name, last_name)
 VALUES
-('abby@gmail.com', SHA1('123abby'), 89123, 'Abby', 'Lee');
+('abby@gmail.com', 1111111111111111, SHA1('123abby'), 89123, 'Abby', 'Lee');
 
 -- Verify
 SELECT * FROM account;
@@ -28,13 +29,13 @@ SET email = 'abbi@gmail.com'
 WHERE email = 'abby@gmail.com';
 
 -- Insert more account data
-INSERT INTO account (email, password, zip_code, first_name, last_name)
+INSERT INTO account (email, credit_card, password, zip_code, first_name, last_name)
 VALUES
-('bobbi@gmail.com', SHA1('123bobbi'), 89123, 'Bobbi', 'Lee'),
-('cathi@gmail.com', SHA1('123cathi'), 89123, 'Cathi', 'Lee'),
-('dicki@gmail.com', SHA1('123dicki'), 89128, 'Dicki', 'Lee'),
-('Eeri@gmail.com', SHA1('123eeri'), 89128, 'Eeri', 'Lee'),
-('Fendi@gmail.com', SHA1('123fendi'), 89128, 'Fendi', 'Lee');
+('bobbi@gmail.com', 2222222222222222, SHA1('123bobbi'), 89123, 'Bobbi', 'Lee'),
+('cathi@gmail.com', 3333333333333333, SHA1('123cathi'), 89123, 'Cathi', 'Lee'),
+('dicki@gmail.com', 4444444444444444, SHA1('123dicki'), 89128, 'Dicki', 'Lee'),
+('Eeri@gmail.com', 5555555555555555, SHA1('123eeri'), 89128, 'Eeri', 'Lee'),
+('Fendi@gmail.com', 6666666666666666, SHA1('123fendi'), 89128, 'Fendi', 'Lee');
 
 
 -- director TABLE
@@ -524,6 +525,118 @@ ON movie.movie_id = theater_schedule.movie_id;
 -- | Red Rock Movies | Dunkirk                 | 12:00:00 |             100 |
 -- | Red Rock Movies | Inception               | 13:00:00 |             100 |
 -- +-----------------+-------------------------+----------+-----------------+
+
+
+
+-- payment TABLE
+-- The idea here is that when a Ticket object gets created in the ticket TABLE
+-- a series of triggers will set all the values for the payment TABLE
+
+CREATE TABLE payment (
+    payment_id INT PRIMARY KEY,
+    credit_card BIGINT,
+    paid BOOLEAN
+);
+
+-- ticket TABLE
+-- The ticket TABLE has a One-to-One Relation with theater_schedule and a
+-- Many-to-One Relation with Account. 
+-- One account can purhase one or more tickets, while one ticket is associated with
+-- only one account
+
+-- So ticket will encompass data about account, movie, theater, theater_schedule, and payment
+-- information as well
+
+CREATE TABLE ticket (
+    ticket_id INT AUTO_INCREMENT PRIMARY KEY,
+    theater_id INT NOT NULL,
+    movie_id INT NOT NULL,
+    time TIME NOT NULL,
+    account_id INT NOT NULL,
+    credit_card BIGINT NOT NULL,
+    payment_id INT NOT NULL,
+    quantity INT NOT NULL,
+    total DECIMAL(5, 2),
+    FOREIGN KEY(theater_id, movie_id, time) REFERENCES theater_schedule(theater_id, movie_id, time)
+);
+
+
+-- Create a trigger to update the value of Total cost of tickets from quantity
+-- Assuming all ticket prices are 9.99
+DELIMITER $$
+
+CREATE TRIGGER before_ticket_insert
+BEFORE INSERT ON ticket
+FOR EACH ROW
+BEGIN
+    SET NEW.total = NEW.quantity * 9.99;
+END $$
+
+DELIMITER ;
+
+-- Create a trigger to insert values into the payment TABLE
+
+DELIMITER $$
+
+CREATE TRIGGER after_ticket_insert
+AFTER INSERT ON ticket
+FOR EACH ROW
+BEGIN
+  INSERT INTO payment
+  SET payment_id = NEW.payment_id,
+      credit_card = NEW.credit_card,
+      paid = true;
+END $$
+
+DELIMITER ;
+
+
+
+-- Now let's try to add some data to the ticket table to see if tht trigger works
+
+-- But before we do that let's create a VIEW to work off of so it's easier to know
+-- which values to INSERT
+
+CREATE VIEW schedule AS
+SELECT theater.theater_id, theater.theater_name, movie.movie_id, movie.title, time, seats_available
+FROM theater
+INNER JOIN theater_schedule
+ON theater.theater_id = theater_schedule.theater_id
+INNER JOIN movie
+ON movie.movie_id = theater_schedule.movie_id;
+
+-- Verify the VIEW
+SELECT * FROM schedule;
+
+
+-- Now let's add the data
+INSERT INTO ticket(
+    theater_id,
+    movie_id,
+    time,
+    account_id,
+    credit_card,
+    payment_id,
+    quantity
+)
+VALUES
+(1, 1, '11:00:00', 1, 111111111111, 1234, 4);
+
+-- Add some more values to the ticket TABLE
+
+INSERT INTO ticket(
+    theater_id,
+    movie_id,
+    time,
+    account_id,
+    credit_card,
+    payment_id,
+    quantity
+)
+VALUES
+(2, 8, '13:00:00', 2, 2222222222222222, 4444, 1),
+(1, 2, '12:00:00', 3, 3333333333333333, 5432, 3);
+
 
 
 
