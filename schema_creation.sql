@@ -219,12 +219,32 @@ VALUES
 ('Interstellar', '2014', 'PG-13', 169, 'Apocalypse, Black Hole, Time Travel, Astronauts',
 5, 4, '2021-1-7', '2021-07-07');
 
+-- Verify
+SELECT * FROM movie;
 
-
-
-
-
-
+-- Insert  more movie data
+INSERT INTO movie (
+    title,
+    year,
+    rating,
+    length_min,
+    description,
+    director_id,
+    category_id,
+    start_date,
+    end_date
+)
+VALUES
+('The Departed', '2006', 'R', 151, 'Irish Gangsters, Boston, Betrayal, Cops, Revenge',
+1, 1, '2020-11-1', '2021-01-01'),
+('Pulp Fiction', '1994', 'R', 178, 'Boxing, Robbery, Hitmen, Samuel L. Jackson',
+2, 1, '2020-12-25', '2021-12-15'),
+('Jurassic Park', '1993', 'PG-13', 127, 'Dinosaurs, DNA, T-Rex, Velociraptor, Chaos',
+3, 4, '2020-11-15', '2021-07-04'),
+('A Clockwork Orange', '1971', 'R', 136, 'Crazy, Crime, Future, Dystopian',
+4, 4, '2021-01-01', '2021-05-05'),
+('Aliens', '1986', 'R', 137, 'Aliens, Eat People, Spaceship, Future',
+6, 3, '2021-01-01', '2021-05-05');
 
 
 
