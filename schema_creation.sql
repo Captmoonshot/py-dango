@@ -134,6 +134,103 @@ VALUES
 -- +----------+------------+-----------+------------+------+
 
 
+-- movie_category TABLE
+
+CREATE TABLE movie_category (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(50)
+);
+
+INSERT INTO movie_category (category_name)
+VALUES
+('Drama'),
+('Action'),
+('Horror'),
+('Scifi'),
+('Romance'),
+('Comedy');
+
+SELECT * FROM movie_category;
+
+-- Results
+-- +-------------+---------------+
+-- | category_id | category_name |
+-- +-------------+---------------+
+-- |           1 | Drama         |
+-- |           2 | Action        |
+-- |           3 | Horror        |
+-- |           4 | Scifi         |
+-- |           5 | Romance       |
+-- |           6 | Comedy        |
+-- +-------------+---------------+
+
+-- movie TABLE
+
+CREATE TABLE movie (
+    movie_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(50) NOT NULL,
+    year VARCHAR(5),
+    rating VARCHAR(5),
+    length_min INT(5),
+    description TEXT,
+    director_id INT,
+    category_id INT,
+    start_date DATE,
+    end_date DATE,
+    active BOOLEAN,
+    FOREIGN KEY (director_id) REFERENCES director(director_id)
+    ON DELETE RESTRICT,
+    FOREIGN KEY (category_id) REFERENCES movie_category(category_id)
+    ON DELETE RESTRICT
+);
+
+-- Create a Trigger for `active` field based on start_date and end_date
+-- if NOW() within start_date and end_date, then true, else false
+
+DELIMITER $$
+
+CREATE TRIGGER before_movie_insert
+BEFORE INSERT ON movie
+FOR EACH ROW
+BEGIN
+    IF NOW() BETWEEN NEW.start_date AND NEW.end_date
+    THEN SET NEW.active = true;
+    ELSE SET NEW.active = false;
+
+    END IF;
+END $$
+
+DELIMITER ;
+
+-- Insert a movie
+
+INSERT INTO movie (
+    title,
+    year,
+    rating,
+    length_min,
+    description,
+    director_id,
+    category_id,
+    start_date,
+    end_date
+)
+VALUES
+('Interstellar', '2014', 'PG-13', 169, 'Apocalypse, Black Hole, Time Travel, Astronauts',
+5, 4, '2021-1-7', '2021-07-07');
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
