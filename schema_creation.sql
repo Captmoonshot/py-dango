@@ -314,7 +314,8 @@ VALUES
 (10, 7, 'Supporting'),
 (10, 8, 'Supporting');
 
--- Use two INNER JOINs to with the movie_actor TABLE
+-- Use two INNER JOINs to with the movie_actor TABLE to see which actors were in
+-- which movies
 
 SELECT m.movie_id, m.title, a.actor_id, a.first_name, a.last_name, role
 FROM movie m
@@ -374,6 +375,163 @@ VALUES
 'Las Vegas', 'NV', 89123, '8:00:00', '23:00:00'),
 ('Red Rock Movies', '{"child": 3.99, "adult": 7.99}', '1234 Red Rock Dr',
 'Las Vegas', 'NV', 89128, '12:00:00', '23:00:00');
+
+
+-- Create a theater_movie Junction TABLE that will allow Many-to-Many Relation between
+-- theater and movie TABLES
+
+CREATE TABLE theater_movie (
+    theater_id INT NOT NULL,
+    movie_id INT NOT NULL,
+    num_of_screens INT,
+    PRIMARY KEY(theater_id, movie_id),
+    FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+    ON DELETE CASCADE,
+    FOREIGN KEY(movie_id) REFERENCES movie(movie_id)
+    ON DELETE CASCADE
+);
+
+-- Insert data into theater_movie Junction TABLE
+
+INSERT INTO theater_movie (theater_id, movie_id, num_of_screens)
+VALUES
+(1, 1, 3),
+(1, 2, 2),
+(1, 5, 1),
+(1, 6, 2),
+(1, 8, 2),
+(2, 1, 3),
+(2, 8, 3),
+(2, 9, 3),
+(2, 10, 3),
+(3, 1, 1),
+(3, 2, 1),
+(3, 3, 1),
+(3, 4, 1),
+(3, 5, 1),
+(3, 6, 1),
+(3, 7, 1),
+(3, 8, 1),
+(3, 9, 1),
+(3, 10, 1);
+
+-- Just as we did before we can use theater_movie Junction TABLE to connect
+-- The theater and movie TABLES to see which movie theaters are playing which movies
+
+SELECT theater_name, title, num_of_screens
+FROM theater
+INNER JOIN theater_movie
+ON theater.theater_id = theater_movie.theater_id
+INNER JOIN movie
+ON movie.movie_id = theater_movie.movie_id;
+
+-- +-----------------+-------------------------+----------------+
+-- | theater_name    | title                   | num_of_screens |
+-- +-----------------+-------------------------+----------------+
+-- | AMC Rainbow     | Interstellar            |              3 |
+-- | AMC Rainbow     | The Departed            |              2 |
+-- | AMC Rainbow     | A Clockwork Orange      |              1 |
+-- | AMC Rainbow     | Aliens                  |              2 |
+-- | AMC Rainbow     | The Dark Knight         |              2 |
+-- | AMC Town Square | Interstellar            |              3 |
+-- | AMC Town Square | The Dark Knight         |              3 |
+-- | AMC Town Square | Dunkirk                 |              3 |
+-- | AMC Town Square | Inception               |              3 |
+-- | Red Rock Movies | Interstellar            |              1 |
+-- | Red Rock Movies | The Departed            |              1 |
+-- | Red Rock Movies | Pulp Fiction            |              1 |
+-- | Red Rock Movies | Jurassic Park           |              1 |
+-- | Red Rock Movies | A Clockwork Orange      |              1 |
+-- | Red Rock Movies | Aliens                  |              1 |
+-- | Red Rock Movies | The Wolf of Wall Street |              1 |
+-- | Red Rock Movies | The Dark Knight         |              1 |
+-- | Red Rock Movies | Dunkirk                 |              1 |
+-- | Red Rock Movies | Inception               |              1 |
+-- +-----------------+-------------------------+----------------+
+
+
+-- theater_schedule TABLE
+-- theater_schedule is weak entity relationship that is derived from the theater entity
+-- because there is no theater_schedule without theater
+
+CREATE TABLE theater_schedule (
+    theater_id INT NOT NULL,
+    movie_id INT NOT NULL,
+    time TIME NOT NULL,
+    seats_available INT,
+    PRIMARY KEY(theater_id, movie_id, time),
+    FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+    ON DELETE CASCADE,
+    FOREIGN KEY(movie_id) REFERENCES movie(movie_id)
+    ON DELETE CASCADE
+);
+
+-- Insert theater_schedule data
+INSERT INTO theater_schedule (theater_id, movie_id, time, seats_available)
+VALUES
+(1, 1, '11:00:00', 100),
+(1, 2, '12:00:00', 100),
+(1, 5, '13:00:00', 100),
+(1, 6, '14:00:00', 100),
+(1, 8, '14:00:00', 100),
+(2, 1, '14:00:00', 100),
+(2, 8, '13:00:00', 100),
+(2, 9, '17:00:00', 100),
+(2, 10, '14:00:00', 100),
+(3, 1, '12:00:00', 100),
+(3, 2, '13:00:00', 100),
+(3, 3, '14:00:00', 100),
+(3, 4, '15:00:00', 100),
+(3, 5, '16:00:00', 100),
+(3, 6, '17:00:00', 100),
+(3, 7, '18:00:00', 100),
+(3, 8, '19:00:00', 100),
+(3, 9, '12:00:00', 100),
+(3, 10, '13:00:00', 100);
+
+
+-- Connect theater and movie TABLEs with theater_schedule junction TABLE
+
+SELECT theater.theater_name, movie.title, time, seats_available
+FROM theater
+INNER JOIN theater_schedule
+ON theater.theater_id = theater_schedule.theater_id
+INNER JOIN movie
+ON movie.movie_id = theater_schedule.movie_id;
+
+-- Result
+
+-- +-----------------+-------------------------+----------+-----------------+
+-- | theater_name    | title                   | time     | seats_available |
+-- +-----------------+-------------------------+----------+-----------------+
+-- | AMC Rainbow     | Interstellar            | 11:00:00 |             100 |
+-- | AMC Rainbow     | The Departed            | 12:00:00 |             100 |
+-- | AMC Rainbow     | A Clockwork Orange      | 13:00:00 |             100 |
+-- | AMC Rainbow     | Aliens                  | 14:00:00 |             100 |
+-- | AMC Rainbow     | The Dark Knight         | 14:00:00 |             100 |
+-- | AMC Town Square | Interstellar            | 14:00:00 |             100 |
+-- | AMC Town Square | The Dark Knight         | 13:00:00 |             100 |
+-- | AMC Town Square | Dunkirk                 | 17:00:00 |             100 |
+-- | AMC Town Square | Inception               | 14:00:00 |             100 |
+-- | Red Rock Movies | Interstellar            | 12:00:00 |             100 |
+-- | Red Rock Movies | The Departed            | 13:00:00 |             100 |
+-- | Red Rock Movies | Pulp Fiction            | 14:00:00 |             100 |
+-- | Red Rock Movies | Jurassic Park           | 15:00:00 |             100 |
+-- | Red Rock Movies | A Clockwork Orange      | 16:00:00 |             100 |
+-- | Red Rock Movies | Aliens                  | 17:00:00 |             100 |
+-- | Red Rock Movies | The Wolf of Wall Street | 18:00:00 |             100 |
+-- | Red Rock Movies | The Dark Knight         | 19:00:00 |             100 |
+-- | Red Rock Movies | Dunkirk                 | 12:00:00 |             100 |
+-- | Red Rock Movies | Inception               | 13:00:00 |             100 |
+-- +-----------------+-------------------------+----------+-----------------+
+
+
+
+
+
+
+
+
 
 
 
