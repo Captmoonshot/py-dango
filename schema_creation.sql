@@ -247,6 +247,134 @@ VALUES
 6, 3, '2021-01-01', '2021-05-05');
 
 
+-- Insert more actor data
+INSERT INTO actor (first_name, last_name, birth_day)
+VALUES
+('Matthew', 'McConaughey', '1969-11-04'),
+('Sigourney', 'Weaver', '1949-10-08'),
+('Matt', 'Damon', '1970-10-08'),
+('Bruce', 'Willis', '1955-03-19'),
+('Samuel', 'Jackson', '1948-12-21'),
+('Macolm', 'McDowell', '1943-06-13');
+
+-- Here we make a Many-To-Many Relation so I'm adding more data
+-- Insert more movie data
+INSERT INTO movie (
+    title,
+    year,
+    rating,
+    length_min,
+    description,
+    director_id,
+    category_id,
+    start_date,
+    end_date
+)
+VALUES
+('The Wolf of Wall Street', '2013', 'R', 180, 'Wall Street, Scam Artist, Drugs, Sex',
+1, 1, '2020-04-06', '2021-01-01'),
+('The Dark Knight', '2008', 'PG-13', 152, 'SuperHero, DC Comic, Gotham City, Dark',
+5, 2, '2020-07-04', '2022-01-01'),
+('Dunkirk', '2017', 'PG-13', 106, 'WW2, Evacuation, Winston Churchill, Fighter Pilots, Navy',
+5, 1, '2020-04-06', '2022-01-01'),
+('Inception', '2010', 'PG-13', 140, 'Dream, Sleep, Corporate Espionage, Faith, Uncertainty',
+5, 1, '2020-04-06', '2022-01-01');
+
+
+-- Create movie_actor TABLE is a Junction Table to connect the movie TABLE and actor TABLE 
+-- in Many-To-Many Relationship
+
+CREATE TABLE movie_actor (
+    movie_id INT NOT NULL,
+    actor_id INT NOT NULL,
+    role VARCHAR(20),
+    PRIMARY KEY(movie_id, actor_id),
+    FOREIGN KEY(movie_id) REFERENCES movie(movie_id)
+    ON DELETE CASCADE,
+    FOREIGN KEY(actor_id) REFERENCES actor(actor_id)
+    ON DELETE CASCADE
+);
+
+-- Insert movie and actor data
+INSERT INTO movie_actor (movie_id, actor_id, role)
+VALUES
+(1, 5, 'Supporting'),
+(1, 9, 'Primary'),
+(1, 11, 'Supporting'),
+(2, 11, 'Primary'),
+(3, 12, 'Primary'),
+(3, 13, 'Primary'),
+(4, 13, 'Supporting'),
+(5, 14, 'Primary'),
+(6, 10, 'Primary'),
+(7, 9, 'Supporting'),
+(8, 5, 'Supporting'),
+(9, 3, 'Primary'),
+(10, 3, 'Supporting'),
+(10, 7, 'Supporting'),
+(10, 8, 'Supporting');
+
+-- Use two INNER JOINs to with the movie_actor TABLE
+
+SELECT m.movie_id, m.title, a.actor_id, a.first_name, a.last_name, role
+FROM movie m
+INNER JOIN movie_actor
+ON m.movie_id = movie_actor.movie_id
+INNER JOIN actor a
+ON a.actor_id = movie_actor.actor_id;
+
+-- Result
+
+-- +----------+-------------------------+----------+------------+-------------+------------+
+-- | movie_id | title                   | actor_id | first_name | last_name   | role       |
+-- +----------+-------------------------+----------+------------+-------------+------------+
+-- |        1 | Interstellar            |        5 | Anne       | Hathaway    | Supporting |
+-- |        1 | Interstellar            |        9 | Matthew    | McConaughey | Primary    |
+-- |        1 | Interstellar            |       11 | Matt       | Damon       | Supporting |
+-- |        2 | The Departed            |       11 | Matt       | Damon       | Primary    |
+-- |        3 | Pulp Fiction            |       12 | Bruce      | Willis      | Primary    |
+-- |        3 | Pulp Fiction            |       13 | Samuel     | Jackson     | Primary    |
+-- |        4 | Jurassic Park           |       13 | Samuel     | Jackson     | Supporting |
+-- |        5 | A Clockwork Orange      |       14 | Macolm     | McDowell    | Primary    |
+-- |        6 | Aliens                  |       10 | Sigourney  | Weaver      | Primary    |
+-- |        7 | The Wolf of Wall Street |        9 | Matthew    | McConaughey | Supporting |
+-- |        8 | The Dark Knight         |        5 | Anne       | Hathaway    | Supporting |
+-- |        9 | Dunkirk                 |        3 | Tom        | Hardy       | Primary    |
+-- |       10 | Inception               |        3 | Tom        | Hardy       | Supporting |
+-- |       10 | Inception               |        7 | Marion     | Cotillard   | Supporting |
+-- |       10 | Inception               |        8 | Joseph     | Levitt      | Supporting |
+-- +----------+-------------------------+----------+------------+-------------+------------+
+
+
+-- Create theater TABLE
+
+CREATE TABLE theater (
+    theater_id INT AUTO_INCREMENT PRIMARY KEY,
+    theater_name VARCHAR(50),
+    ticket_price json,
+    address VARCHAR(50),
+    city VARCHAR(50),
+    state VARCHAR(50),
+    zip_code INT,
+    open TIME,
+    close TIME
+);
+
+-- Insert theater data
+
+INSERT INTO theater (theater_name, ticket_price, address, city, state, zip_code, open, close)
+VALUES
+('AMC Rainbow', '{"child": 5.99, "adult": 9.99}', '1234 Rainbow Rd.',
+'Las Vegas', 'NV', 89123, '9:00:00', '21:00:00');
+
+-- Insert more theater data
+INSERT INTO theater (theater_name, ticket_price, address, city, state, zip_code, open, close)
+VALUES
+('AMC Town Square', '{"child": 6.99, "adult": 11.99}', '1234 Las Vegas Blvd',
+'Las Vegas', 'NV', 89123, '8:00:00', '23:00:00'),
+('Red Rock Movies', '{"child": 3.99, "adult": 7.99}', '1234 Red Rock Dr',
+'Las Vegas', 'NV', 89128, '12:00:00', '23:00:00');
+
 
 
 
