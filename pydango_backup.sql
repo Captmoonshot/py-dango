@@ -247,7 +247,7 @@ CREATE TABLE `payment` (
 
 LOCK TABLES `payment` WRITE;
 /*!40000 ALTER TABLE `payment` DISABLE KEYS */;
-INSERT INTO `payment` VALUES (1234,111111111111,1),(4444,2222222222222222,1),(5432,3333333333333333,1);
+INSERT INTO `payment` VALUES (1234,1111111111111111,1),(4444,2222222222222222,1),(5432,3333333333333333,1),(8899,5555555555555555,1);
 /*!40000 ALTER TABLE `payment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -369,14 +369,13 @@ CREATE TABLE `ticket` (
   `movie_id` int NOT NULL,
   `time` time NOT NULL,
   `account_id` int NOT NULL,
-  `credit_card` bigint NOT NULL,
   `payment_id` int NOT NULL,
   `quantity` int NOT NULL,
   `total` decimal(5,2) DEFAULT NULL,
   PRIMARY KEY (`ticket_id`),
   KEY `theater_id` (`theater_id`,`movie_id`,`time`),
   CONSTRAINT `ticket_ibfk_1` FOREIGN KEY (`theater_id`, `movie_id`, `time`) REFERENCES `theater_schedule` (`theater_id`, `movie_id`, `time`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -385,7 +384,7 @@ CREATE TABLE `ticket` (
 
 LOCK TABLES `ticket` WRITE;
 /*!40000 ALTER TABLE `ticket` DISABLE KEYS */;
-INSERT INTO `ticket` VALUES (3,1,1,'11:00:00',1,111111111111,1234,4,39.96),(4,2,8,'13:00:00',2,2222222222222222,4444,1,9.99),(5,1,2,'12:00:00',3,3333333333333333,5432,3,29.97);
+INSERT INTO `ticket` VALUES (1,1,1,'11:00:00',1,1234,4,39.96),(2,2,8,'13:00:00',2,4444,1,9.99),(3,1,2,'12:00:00',3,5432,3,29.97),(4,3,8,'19:00:00',5,8899,10,99.90);
 /*!40000 ALTER TABLE `ticket` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -417,7 +416,7 @@ DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `after_ticket_insert` AFTER INSERT ON `ticket` FOR EACH ROW BEGIN
   INSERT INTO payment
   SET payment_id = NEW.payment_id,
-      credit_card = NEW.credit_card,
+      credit_card = (SELECT credit_card FROM account where account_id = NEW.account_id),
       paid = true;
 END */;;
 DELIMITER ;
@@ -425,6 +424,27 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Temporary view structure for view `ticket_information`
+--
+
+DROP TABLE IF EXISTS `ticket_information`;
+/*!50001 DROP VIEW IF EXISTS `ticket_information`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `ticket_information` AS SELECT 
+ 1 AS `ticket_id`,
+ 1 AS `first_name`,
+ 1 AS `last_name`,
+ 1 AS `time`,
+ 1 AS `quantity`,
+ 1 AS `total`,
+ 1 AS `paid`,
+ 1 AS `title`,
+ 1 AS `theater_name`,
+ 1 AS `address`*/;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Final view structure for view `schedule`
@@ -443,6 +463,24 @@ DELIMITER ;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `ticket_information`
+--
+
+/*!50001 DROP VIEW IF EXISTS `ticket_information`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = cp850 */;
+/*!50001 SET character_set_results     = cp850 */;
+/*!50001 SET collation_connection      = cp850_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `ticket_information` AS select `ticket`.`ticket_id` AS `ticket_id`,`account`.`first_name` AS `first_name`,`account`.`last_name` AS `last_name`,`ticket`.`time` AS `time`,`ticket`.`quantity` AS `quantity`,`ticket`.`total` AS `total`,`payment`.`paid` AS `paid`,`movie`.`title` AS `title`,`theater`.`theater_name` AS `theater_name`,`theater`.`address` AS `address` from ((((`ticket` join `account` on((`account`.`account_id` = `ticket`.`account_id`))) join `payment` on((`payment`.`payment_id` = `ticket`.`payment_id`))) join `movie` on((`movie`.`movie_id` = `ticket`.`movie_id`))) join `theater` on((`theater`.`theater_id` = `ticket`.`theater_id`))) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -453,4 +491,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-01-26  6:48:16
+-- Dump completed on 2021-01-26 19:03:42
