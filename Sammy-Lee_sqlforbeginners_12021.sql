@@ -40,14 +40,16 @@ The Regular Entity Tables are:
 The Many-to-Many Junction Tables are:
 1. movie_actor (connects movie to actor table)
 2. theater_movie (connects theater to movie table)
+3. theater_schedule (to connect movie to theater schedule or showings) - a Weak Entity with 
+a composite Primary key from (theater_id, movie_id, and time)
 
 
 The 2 Views are:
-1. theater_schedule
+1. schedule
 2. ticket_information
 
-These two Views show some very useful information, and I even accidentally included theater_schedule
-in the ER diagram.
+The purpose of the Views are to show useful information without having to constantly
+do JOINS.
 
 There's also some interesting TRIGGERS that are included with some of the tables. */
 
